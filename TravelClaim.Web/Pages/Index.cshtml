@@ -127,6 +127,12 @@ else
             <p>Syfte: @claim.Purpose</p>
             <p>Avresa: @claim.Departure</p>
             <p>Hemkomst: @claim.ReturnDate</p>
+            <h3>Resenär och reseuppgifter</h3>
+            <p>Personnummer: @claim.PersonalNumber</p>
+            <p>Bostadsadress: @claim.HomeAddress</p>
+            <p>Arbetsplats: @claim.WorkplaceAddress</p>
+            <p>Övernattning: @(claim.HasOvernightStay ? "Ja" : "Nej")</p>
+            <p>Logi – adress: @claim.LodgingAddress</p>
             <p>Logi betalat av arbetsgivaren:
                 @(claim.LodgingPaidByEmployer ? "Ja" : "Nej")
             </p>
@@ -139,6 +145,9 @@ else
             {
                 <div class="daily-calculation">
                     <h5>@day.Date</h5>
+                    <p>Frukost betald: @(day.BreakfastPaid ? "Ja" : "Nej")</p>
+                    <p>Lunch betald: @(day.LunchPaid ? "Ja" : "Nej")</p>
+                    <p>Middag betald: @(day.DinnerPaid ? "Ja" : "Nej")</p>
                     <p>Grundbelopp: @day.BaseAllowance kr</p>
                     <p>Måltidsavdrag: −@day.MealDeduction kr</p>
                     <p>Nattraktamente: +@day.NightAllowance kr</p>
