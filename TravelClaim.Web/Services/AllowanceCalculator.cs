@@ -5,6 +5,46 @@ namespace TravelClaim.Web.Services;
 
 public class AllowanceCalculator
 {
+    public List<DailyCalculation> CalculateTrip(TravelClaimModel claim)
+    {
+        if (!claim.HasOvernightStay ||
+            claim.DistanceFromHome <= 50 ||
+            claim.DistanceFromWorkplace <= 50)
+        {
+            claim.TotalTaxFreeAmount = 0;
+            claim.TaxableAmount = claim.PaidAmount;
+
+            return new List<DailyCalculation>();
+        }
+
+        List<DailyCalculation> calculations = new List<DailyCalculation>();
+
+        DateTime currentDate = claim.Departure.Date;
+
+        while (currentDate <= claim.ReturnDate.Date)
+        {
+            DailyCalculation day = new DailyCalculation();
+            day.Date = DateOnly.FromDateTime(currentDate);
+
+            day = CalculateDay(day, claim);
+            calculations.Add(day);
+
+            currentDate = currentDate.AddDays(1);
+        }
+
+        decimal eligibleAmount = 0;
+
+        foreach (DailyCalculation day in calculations)
+        {
+            eligibleAmount += day.TaxFreeAmount;
+        }
+
+        claim.TotalTaxFreeAmount = Math.Min(claim.PaidAmount, eligibleAmount);
+        claim.TaxableAmount = Math.Max(0, claim.PaidAmount - eligibleAmount);
+
+        return calculations;
+    }
+
     public decimal GetDailyAllowance(DateTime departure, DateTime currentDate)
     {
         if (currentDate.Date > departure.Date.AddYears(2))
