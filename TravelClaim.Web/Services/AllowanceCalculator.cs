@@ -1,4 +1,6 @@
 using TravelClaim.Web.Models;
+using TravelClaimModel = global::TravelClaim.Web.Models.TravelClaim;
+
 namespace TravelClaim.Web.Services;
 
 public class AllowanceCalculator
@@ -82,5 +84,49 @@ public class AllowanceCalculator
         }
 
         return deduction;
+    }
+
+    public DailyCalculation CalculateDay(DailyCalculation day, TravelClaimModel claim)
+    {
+        decimal amount = 0;
+        bool isFullDay = false;
+
+        DateTime currentDate = day.Date.ToDateTime(TimeOnly.MinValue);
+        decimal dailyAllowance = GetDailyAllowance(claim.Departure, currentDate);
+
+        // Avresedag
+        if (day.Date == DateOnly.FromDateTime(claim.Departure))
+        {
+            if (claim.Departure.TimeOfDay < new TimeSpan(12, 0, 0))
+            {
+                amount = dailyAllowance;
+                isFullDay = true;
+            }
+            else if (dailyAllowance == 300)
+            {
+                amount = 150;
+            }
+        }
+        // Hemkomstdag
+        else if (day.Date == DateOnly.FromDateTime(claim.ReturnDate))
+        {
+            if (claim.ReturnDate.TimeOfDay > new TimeSpan(19, 0, 0))
+            {
+                amount = dailyAllowance;
+                isFullDay = true;
+            }
+            else if (dailyAllowance == 300)
+            {
+                amount = 150;
+            }
+        }
+        // Mellandagar
+        else
+        {
+            amount = dailyAllowance;
+            isFullDay = true;
+        }
+
+        return day;
     }
 }
