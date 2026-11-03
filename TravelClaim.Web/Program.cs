@@ -1,4 +1,10 @@
+using Microsoft.EntityFrameworkCore;
+using TravelClaim.Web.Data;
+
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddDbContext<TravelClaimContext>(options =>
+    options.UseSqlite("Data Source=travelclaims.db"));
 
 // Add services to the container.
 builder.Services.AddRazorPages();
