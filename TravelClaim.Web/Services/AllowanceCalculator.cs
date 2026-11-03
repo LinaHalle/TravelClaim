@@ -127,6 +127,26 @@ public class AllowanceCalculator
             isFullDay = true;
         }
 
+        decimal deduction = CalculateMealDeduction(day, isFullDay, amount);
+
+        // Nattraktamente
+        if (claim.HasOvernightStay &&
+            !claim.LodgingPaidByEmployer &&
+            day.Date < DateOnly.FromDateTime(claim.ReturnDate))
+        {
+            day.NightAllowance = 150;
+        }
+        else
+        {
+            day.NightAllowance = 0;
+        }
+
+        day.BaseAllowance = amount;
+        day.MealDeduction = deduction;
+
+        day.TaxFreeAmount = Math.Max(0, amount - deduction)
+                            + day.NightAllowance;
+
         return day;
     }
 }
