@@ -29,3 +29,54 @@ body {
 .form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
   text-align: start;
 }
+
+
+/* Reseräkningsformulär */
+.claim-form {
+    max-width: 750px;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 240px 1fr;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 16px;
+}
+
+.form-row label {
+    margin: 0;
+    font-weight: 500;
+}
+
+.form-row input:not([type="checkbox"]) {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 9px;
+}
+
+.form-row input[type="checkbox"] {
+    justify-self: start;
+    width: 18px;
+    height: 18px;
+}
+
+.meal-row {
+    padding: 12px 0;
+    border-bottom: 1px solid #ddd;
+}
+
+.meal-row label {
+    margin-right: 20px;
+}
+
+.saved-claim {
+    padding: 16px 0;
+}
+
+@media (max-width: 600px) {
+    .form-row {
+        grid-template-columns: 1fr;
+        gap: 6px;
+    }
+}

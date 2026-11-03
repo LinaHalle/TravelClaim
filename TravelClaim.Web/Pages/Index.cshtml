@@ -1,10 +1,229 @@
 ﻿@page
 @model IndexModel
-@{
-    ViewData["Title"] = "Home page";
+@using TravelClaim.Web.Models
+
+<h1>Reseräkning</h1>
+<h2>Ny reseräkning</h2>
+
+<form method="post" class="claim-form" lang="sv-SE">
+
+    <div class="form-row">
+        <label asp-for="Claim.EmployeeName">Namn</label>
+        <input asp-for="Claim.EmployeeName" required />
+    </div>
+
+    <div class="form-row">
+        <label asp-for="Claim.PersonalNumber">Personnummer</label>
+        <input asp-for="Claim.PersonalNumber"
+               placeholder="ÅÅÅÅMMDD-XXXX"
+               required />
+    </div>
+
+    <div class="form-row">
+        <label asp-for="Claim.HomeAddress">Bostadsadress</label>
+        <input asp-for="Claim.HomeAddress" required />
+    </div>
+
+    <div class="form-row">
+        <label asp-for="Claim.WorkplaceAddress">Ordinarie arbetsplats – adress</label>
+        <input asp-for="Claim.WorkplaceAddress" required />
+    </div>
+
+    <div class="form-row">
+        <label asp-for="Claim.Destination">Destination</label>
+        <input asp-for="Claim.Destination" required />
+    </div>
+
+    <div class="form-row">
+        <label asp-for="Claim.Purpose">Syfte med resan</label>
+        <input asp-for="Claim.Purpose" required />
+    </div>
+
+    <div class="form-row">
+        <label asp-for="Claim.Departure">Avresa</label>
+        <input asp-for="Claim.Departure"
+               type="datetime-local"
+               asp-format="{0:yyyy-MM-ddTHH:mm}"
+               step="60"
+               lang="sv-SE"
+               required />
+    </div>
+
+    <div class="form-row">
+        <label asp-for="Claim.ReturnDate">Hemkomst</label>
+        <input asp-for="Claim.ReturnDate"
+               type="datetime-local"
+               asp-format="{0:yyyy-MM-ddTHH:mm}"
+               step="60"
+               lang="sv-SE"
+               required />
+        <span asp-validation-for="Claim.ReturnDate"></span>
+    </div>
+
+    <div class="form-row">
+        <label asp-for="Claim.PaidAmount">Utbetalt traktamente (kr)</label>
+        <input asp-for="Claim.PaidAmount"
+               type="number"
+               step="50"
+               min="0"
+               required />
+    </div>
+
+    <div class="form-row">
+        <label asp-for="Claim.HasOvernightStay">Övernattning</label>
+        <input asp-for="Claim.HasOvernightStay" type="checkbox" />
+    </div>
+
+    <div class="form-row" id="LodgingAddressRow">
+        <label asp-for="Claim.LodgingAddress">Logi – adress</label>
+        <input asp-for="Claim.LodgingAddress" />
+    </div>
+
+    <div class="form-row" id="LodgingPaidRow">
+        <label asp-for="Claim.LodgingPaidByEmployer">
+            Logi betalat av arbetsgivaren
+        </label>
+        <input asp-for="Claim.LodgingPaidByEmployer" type="checkbox" />
+    </div>
+
+    <div class="form-row">
+        <label asp-for="Claim.DistanceFromHome">Avstånd från bostaden (km)</label>
+        <input asp-for="Claim.DistanceFromHome"
+               type="number"
+               step="10"
+               min="0" />
+    </div>
+
+    <div class="form-row">
+        <label asp-for="Claim.DistanceFromWorkplace">Avstånd från arbetsplatsen (km)</label>
+        <input asp-for="Claim.DistanceFromWorkplace"
+               type="number"
+               step="10"
+               min="0" />
+    </div>
+
+    <h3>Betalda måltider per dag</h3>
+    <p>Välj måltider för respektive dag.</p>
+
+    <div id="dailyMeals"></div>
+
+    <button type="submit">Beräkna och spara</button>
+</form>
+
+<hr />
+
+<h2>Sparade reseräkningar</h2>
+
+@if (Model.SavedClaims.Count == 0)
+{
+    <p>Inga sparade reseräkningar ännu.</p>
+}
+else
+{
+    @foreach (TravelClaim claim in Model.SavedClaims)
+    {
+        <div class="saved-claim">
+            <h3>@claim.EmployeeName – @claim.Destination</h3>
+            <p>Syfte: @claim.Purpose</p>
+            <p>Avresa: @claim.Departure</p>
+            <p>Hemkomst: @claim.ReturnDate</p>
+            <p>Logi betalat av arbetsgivaren:
+                @(claim.LodgingPaidByEmployer ? "Ja" : "Nej")
+            </p>
+            <p>Skattefritt: @claim.TotalTaxFreeAmount kr</p>
+            <p>Skattepliktigt: @claim.TaxableAmount kr</p>
+
+            <h4>Daglig beräkning</h4>
+
+            @foreach (DailyCalculation day in claim.DailyCalculations)
+            {
+                <div class="daily-calculation">
+                    <h5>@day.Date</h5>
+                    <p>Grundbelopp: @day.BaseAllowance kr</p>
+                    <p>Måltidsavdrag: −@day.MealDeduction kr</p>
+                    <p>Nattraktamente: +@day.NightAllowance kr</p>
+                    <p><strong>Högsta skattefria belopp enligt schablon: @day.TaxFreeAmount kr</strong></p>
+                </div>
+            }
+        </div>
+        <hr />
+    }
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
-</div>
+<script>
+    const departureInput = document.getElementById("Claim_Departure");
+    const returnInput = document.getElementById("Claim_ReturnDate");
+    const dailyMeals = document.getElementById("dailyMeals");
+
+    const overnightCheckbox = document.getElementById("Claim_HasOvernightStay");
+    const lodgingAddress = document.getElementById("Claim_LodgingAddress");
+    const lodgingAddressRow = document.getElementById("LodgingAddressRow");
+
+    function toggleLodgingAddress() {
+        lodgingAddressRow.style.display = overnightCheckbox.checked ? "flex" : "none";
+        lodgingAddress.required = overnightCheckbox.checked;
+
+        if (!overnightCheckbox.checked) {
+            lodgingAddress.value = "";
+        }
+    }
+
+    overnightCheckbox.addEventListener("change", toggleLodgingAddress);
+    toggleLodgingAddress();
+
+    function createMealRows() {
+        dailyMeals.innerHTML = "";
+        if (!departureInput.value || !returnInput.value) return;
+
+        let start = new Date(departureInput.value.substring(0, 10) + "T00:00:00");
+        let end = new Date(returnInput.value.substring(0, 10) + "T00:00:00");
+
+        if (end < start) return;
+
+        let index = 0;
+
+        for (let date = new Date(start); date <= end; date.setDate(date.getDate() + 1)) {
+            let dateString =
+                date.getFullYear() + "-" +
+                String(date.getMonth() + 1).padStart(2, "0") + "-" +
+                String(date.getDate()).padStart(2, "0");
+
+            let row = document.createElement("div");
+            row.className = "meal-row";
+
+            row.innerHTML = `
+                <h4>${dateString}</h4>
+                <input type="hidden"
+                    name="Claim.DailyCalculations[${index}].Date"
+                    value="${dateString}" />
+                <label>
+                    <input type="checkbox"
+                        name="Claim.DailyCalculations[${index}].BreakfastPaid"
+                        value="true" />
+                    Frukost
+                </label>
+                <label>
+                    <input type="checkbox"
+                        name="Claim.DailyCalculations[${index}].LunchPaid"
+                        value="true" />
+                    Lunch
+                </label>
+                <label>
+                    <input type="checkbox"
+                        name="Claim.DailyCalculations[${index}].DinnerPaid"
+                        value="true" />
+                    Middag
+                </label>
+            `;
+
+            dailyMeals.appendChild(row);
+            index++;
+        }
+    }
+
+    departureInput.addEventListener("change", createMealRows);
+    returnInput.addEventListener("change", createMealRows);
+
+    createMealRows();
+</script>
+
