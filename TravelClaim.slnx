@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="TravelClaim.Tests/TravelClaim.Tests.csproj" />
+  <Project Path="TravelClaim.Web/TravelClaim.Web.csproj" />
+</Solution>
